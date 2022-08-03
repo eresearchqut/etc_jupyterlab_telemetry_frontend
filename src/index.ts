@@ -20,39 +20,35 @@ import { AWSAPIGatewayWrapper } from './api';
 
 
 function getTelemetryHandler(baseUrl: string) {
-  let handler;
-
-    
-  if (baseUrl.includes('localhost')) {
-    handler = console.log;
-  } else {
-    let telemUrl = baseUrl.replace('jupyter', 'telemetry');
-    let bucket = ''
-    if (baseUrl == 'https://jupyter.qutanalytics.io') {
-      bucket = 'jupyterhub-telementry-prod-collector'
-    } else {
-      bucket = 'jupyterhub-telementry-dev-collector'
-    }
-    let awsAPIGatewayWrapper: AWSAPIGatewayWrapper = new AWSAPIGatewayWrapper({
-      url: telemUrl,
-      bucket: bucket,
+  let awsAPIGatewayWrapper: AWSAPIGatewayWrapper;
+  if (baseUrl.includes('jupyter.dev.qutanalytics.io')) {
+    awsAPIGatewayWrapper = new AWSAPIGatewayWrapper({
+      url: 'https://telemetry.dev.qutanalytics.io',
+      bucket: 'jupyterhub-telementry-dev-collector',
       path: '2022s2'
     });
-    let remoteObserve = async () => {
-      try {
-        let timestamp: number = Date.now();
-        let response: Response = await awsAPIGatewayWrapper.requestAsync(["This request was made by AWSAPIGatewayWrapper#requestAsync.", timestamp]);
-        console.log(response);
-      }
-      catch (e) {
-        console.error(e);
-      }
-    };
-
-    handler = remoteObserve;
+  } else if (baseUrl.includes('jupyter.qutanalytics.io')) {
+    awsAPIGatewayWrapper = new AWSAPIGatewayWrapper({
+      url: 'https://telmetry.qutanalytics.io',
+      bucket: 'jupyterhub-telementry-prod-collector',
+      path: '2022s2'
+    });
+  } else {
+    return console.log;
   }
 
-  return handler;
+  let remoteObserve = async () => {
+    try {
+      let timestamp: number = Date.now();
+      //let response: Response = await awsAPIGatewayWrapper.requestAsync(["This request was made by AWSAPIGatewayWrapper#requestAsync.", timestamp]);
+      await awsAPIGatewayWrapper.requestAsync(["This request was made by AWSAPIGatewayWrapper#requestAsync.", timestamp]);
+    }
+    catch (e) {
+      console.error(e);
+    }
+  };
+
+  return remoteObserve;
 }
 
 const plugin: JupyterFrontEndPlugin<void> = {
