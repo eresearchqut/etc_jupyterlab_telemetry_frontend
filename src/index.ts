@@ -22,14 +22,21 @@ import { AWSAPIGatewayWrapper } from './api';
 function getTelemetryHandler(baseUrl: string) {
   let handler;
 
+    
   if (baseUrl.includes('localhost')) {
     handler = console.log;
   } else {
     let telemUrl = baseUrl.replace('jupyter', 'telemetry');
+    let bucket = ''
+    if (baseUrl == 'https://jupyter.qutanalytics.io') {
+      bucket = 'jupyterhub-telementry-prod-collector'
+    } else {
+      bucket = 'jupyterhub-telementry-dev-collector'
+    }
     let awsAPIGatewayWrapper: AWSAPIGatewayWrapper = new AWSAPIGatewayWrapper({
       url: telemUrl,
-      bucket: 'telementry',
-      path: "2022s2",
+      bucket: bucket,
+      path: '2022s2'
     });
     let remoteObserve = async () => {
       try {
