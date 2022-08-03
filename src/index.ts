@@ -4,6 +4,10 @@ import {
 } from '@jupyterlab/application';
 
 import {
+  ServerConnection
+} from '@jupyterlab/services';
+
+import {
   INotebookTracker,
   NotebookPanel
 } from '@jupyterlab/notebook';
@@ -14,22 +18,35 @@ import {
 
 import { AWSAPIGatewayWrapper } from './api';
 
-let awsAPIGatewayWrapper: AWSAPIGatewayWrapper = new AWSAPIGatewayWrapper({
-  url: "https://telemetry.dev.qutanalytics.io",
-  bucket: 'jupyterhub-telementry-dev',
-  path: "iab303",
-});
 
-let remoteObserve = async () => {
-  try {
-    let timestamp: number = Date.now();
-    let response: Response = await awsAPIGatewayWrapper.requestAsync(["This request was made by AWSAPIGatewayWrapper#requestAsync.", timestamp]);
-    console.log(response)
+function getTelemetryHandler(baseUrl: string) {
+  let handler;
+
+  if (baseUrl.includes('localhost')) {
+    handler = console.log;
+  } else {
+    let telemUrl = baseUrl.replace('jupyter', 'telemetry');
+    let awsAPIGatewayWrapper: AWSAPIGatewayWrapper = new AWSAPIGatewayWrapper({
+      url: telemUrl,
+      bucket: 'telementry',
+      path: "2022s2",
+    });
+    let remoteObserve = async () => {
+      try {
+        let timestamp: number = Date.now();
+        let response: Response = await awsAPIGatewayWrapper.requestAsync(["This request was made by AWSAPIGatewayWrapper#requestAsync.", timestamp]);
+        console.log(response);
+      }
+      catch (e) {
+        console.error(e);
+      }
+    };
+
+    handler = remoteObserve;
   }
-  catch (e) {
-    console.error(e);
-  }
-};
+
+  return handler;
+}
 
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'etc-frontend:plugin',
@@ -46,6 +63,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
     (async () => {
       await app.started;
 
+      const settings = ServerConnection.makeSettings();
+      const baseUrl = settings.baseUrl;
+      let telemetryHandler = getTelemetryHandler(baseUrl);
+
       try {
         notebookTracker.widgetAdded.connect(
           (sender: INotebookTracker, notebookPanel: NotebookPanel) => {
@@ -55,49 +76,49 @@ const plugin: JupyterFrontEndPlugin<void> = {
               etcJupyterLabTelemetryLibraryFactory.create({ notebookPanel });
 
             etcJupyterLabTelemetryLibrary.notebookClipboardEvent.notebookClipboardCopied.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.notebookClipboardEvent.notebookClipboardCut.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.notebookClipboardEvent.notebookClipboardPasted.connect(
-              remoteObserve
+	      telemetryHandler 
             );
 
             etcJupyterLabTelemetryLibrary.notebookVisibilityEvent.notebookVisible.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.notebookVisibilityEvent.notebookHidden.connect(
-              remoteObserve
+	      telemetryHandler 
             );
 
             etcJupyterLabTelemetryLibrary.notebookOpenEvent.notebookOpened.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.notebookCloseEvent.notebookClosed.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.notebookSaveEvent.notebookSaved.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.notebookScrollEvent.notebookScrolled.connect(
-              remoteObserve
+	      telemetryHandler 
             );
 
             etcJupyterLabTelemetryLibrary.activeCellChangeEvent.activeCellChanged.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.cellAddEvent.cellAdded.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.cellRemoveEvent.cellRemoved.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.cellExecutionEvent.cellExecuted.connect(
-              remoteObserve
+	      telemetryHandler 
             );
             etcJupyterLabTelemetryLibrary.cellErrorEvent.cellErrored.connect(
-              remoteObserve
+	      telemetryHandler 
             );
           }
         );
