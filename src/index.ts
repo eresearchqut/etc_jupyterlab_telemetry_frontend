@@ -29,7 +29,7 @@ function getTelemetryHandler(baseUrl: string) {
     });
   } else if (baseUrl.includes('jupyter.qutanalytics.io')) {
     awsAPIGatewayWrapper = new AWSAPIGatewayWrapper({
-      url: 'https://telmetry.qutanalytics.io',
+      url: 'https://telemetry.qutanalytics.io',
       bucket: 'jupyterhub-telementry-prod-collector',
       path: '2022s2'
     });
