@@ -55,7 +55,8 @@
   "dependencies": {
     "@jupyterlab/application": "^3.1.0",
     "@jupyterlab/notebook": "^3.3.0",
-    "@educational-technology-collective/etc_jupyterlab_telemetry_library": "^2.1.4"
+    "@educational-technology-collective/etc_jupyterlab_telemetry_library": "^2.1.4",
+    "@educational-technology-collective/etc_jupyterlab_notebook_state_provider": "^2.0.0"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.1.0",
@@ -88,6 +89,11 @@
         "bundled": false,
         "singleton": true,
         "strictVersion": false
+      },
+      "@educational-technology-collective/etc_jupyterlab_notebook_state_provider": {
+        "bundled": false,
+        "singleton": true,
+        "strictVersion": true
       }
     },
     "discovery": {

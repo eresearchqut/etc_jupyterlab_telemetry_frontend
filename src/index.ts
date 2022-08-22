@@ -14,13 +14,19 @@ import {
 
 import {
   IETCJupyterLabTelemetryLibraryFactory
-} from '@educational-technology-collective/etc_jupyterlab_telemetry_library'
+} from '@educational-technology-collective/etc_jupyterlab_telemetry_library';
+
+import {
+  IETCJupyterLabNotebookStateProvider
+} from "@educational-technology-collective/etc_jupyterlab_notebook_state_provider";
+
 
 import { AWSAPIGatewayWrapper } from './api';
 
 
-function getTelemetryHandler(baseUrl: string) {
+function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNotebookStateProvider) {
   let awsAPIGatewayWrapper: AWSAPIGatewayWrapper;
+
   if (baseUrl.includes('jupyter.dev.qutanalytics.io')) {
     awsAPIGatewayWrapper = new AWSAPIGatewayWrapper({
       url: 'https://telemetry.dev.qutanalytics.io',
@@ -37,14 +43,23 @@ function getTelemetryHandler(baseUrl: string) {
     return console.log;
   }
 
-  let remoteObserve = async () => {
+  let remoteObserve = async (sender: any, args: any) => {
     try {
-      let timestamp: number = Date.now();
-      //let response: Response = await awsAPIGatewayWrapper.requestAsync(["This request was made by AWSAPIGatewayWrapper#requestAsync.", timestamp]);
-      await awsAPIGatewayWrapper.requestAsync(["This request was made by AWSAPIGatewayWrapper#requestAsync.", timestamp]);
+      let notebookPanel = args.notebookPanel;
+      let notebookState = stateProvider.getNotebookState({notebookPanel});
+      delete args.notebookPanel;
+      let data = {
+        "event": args,
+        "state": notebookState
+      };
+      await awsAPIGatewayWrapper.requestAsync(data);
     }
     catch (e) {
-      console.error(e);
+      const errorMessage = e.message;
+      const regex = /The cell at index [\D+] is not tracked/g;
+      if (errorMessage.match(regex)) {
+        console.error(e);
+      }
     }
   };
 
@@ -56,27 +71,31 @@ const plugin: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   requires: [
     INotebookTracker,
-    IETCJupyterLabTelemetryLibraryFactory
+    IETCJupyterLabTelemetryLibraryFactory,
+    IETCJupyterLabNotebookStateProvider
   ],
   activate: (
     app: JupyterFrontEnd,
     notebookTracker: INotebookTracker,
-    etcJupyterLabTelemetryLibraryFactory: IETCJupyterLabTelemetryLibraryFactory
+    etcJupyterLabTelemetryLibraryFactory: IETCJupyterLabTelemetryLibraryFactory,
+    etcJupyterLabNotebookStateProvider: IETCJupyterLabNotebookStateProvider
   ) => {
     (async () => {
       await app.started;
 
       const settings = ServerConnection.makeSettings();
       const baseUrl = settings.baseUrl;
-      let telemetryHandler = getTelemetryHandler(baseUrl);
+      let telemetryHandler = getTelemetryHandler(baseUrl, etcJupyterLabNotebookStateProvider);
 
       try {
         notebookTracker.widgetAdded.connect(
-          (sender: INotebookTracker, notebookPanel: NotebookPanel) => {
+          (async (sender: INotebookTracker, notebookPanel: NotebookPanel) => {
             //  Handlers must be attached immediately in order to detect early events, hence we do not want to await the appearance of the Notebook.
 
             let etcJupyterLabTelemetryLibrary =
               etcJupyterLabTelemetryLibraryFactory.create({ notebookPanel });
+
+	    etcJupyterLabNotebookStateProvider.addNotebookPanel({ notebookPanel });
 
             etcJupyterLabTelemetryLibrary.notebookClipboardEvent.notebookClipboardCopied.connect(
 	      telemetryHandler 
@@ -123,7 +142,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             etcJupyterLabTelemetryLibrary.cellErrorEvent.cellErrored.connect(
 	      telemetryHandler 
             );
-          }
+          })
         );
       } catch (e) {
         console.error(e);
