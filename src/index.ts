@@ -39,8 +39,6 @@ function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNoteb
       bucket: 'jupyterhub-telementry-prod-collector',
       path: '2022s2'
     });
-  } else {
-    return console.log;
   }
 
   let remoteObserve = async (sender: any, args: any) => {
@@ -48,11 +46,25 @@ function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNoteb
       let notebookPanel = args.notebookPanel;
       let notebookState = stateProvider.getNotebookState({notebookPanel});
       delete args.notebookPanel;
+
+      // remove user's environment variables
+      if (args.environ) {
+        console.log(args.environ);
+      }
+      delete args.environ;
+      if (args.eventName == 'open_notebook') {
+        delete args.meta;
+      }
+
       let data = {
         "event": args,
         "state": notebookState
       };
-      await awsAPIGatewayWrapper.requestAsync(data);
+      if (awsAPIGatewayWrapper) {
+        await awsAPIGatewayWrapper.requestAsync(data);
+      } else {
+        console.log(data);
+      }
     }
     catch (e) {
       const errorMessage = e.message;
