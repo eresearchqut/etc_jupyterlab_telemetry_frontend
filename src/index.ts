@@ -47,11 +47,15 @@ function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNoteb
       let notebookState = stateProvider.getNotebookState({notebookPanel});
       delete args.notebookPanel;
 
-      // remove user's environment variables
+      // override user's environment variables
       if (args.environ) {
-        console.log(args.environ);
+        let environ = {
+          "hostname": args.environ.HOSTNAME,
+          "user": args.environ.JUPYTERHUB_USER,
+          "pwd": args.environ.PWD
+	};
+        args.environ = environ;
       }
-      delete args.environ;
       if (args.eventName == 'open_notebook') {
         delete args.meta;
       }
