@@ -53,7 +53,7 @@ function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNoteb
           "hostname": args.environ.HOSTNAME,
           "user": args.environ.JUPYTERHUB_USER,
           "pwd": args.environ.PWD
-	};
+        };
         args.environ = environ;
       }
       if (args.eventName == 'open_notebook') {
@@ -111,7 +111,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             let etcJupyterLabTelemetryLibrary =
               etcJupyterLabTelemetryLibraryFactory.create({ notebookPanel });
 
-	    etcJupyterLabNotebookStateProvider.addNotebookPanel({ notebookPanel });
+            etcJupyterLabNotebookStateProvider.addNotebookPanel({ notebookPanel });
 
             etcJupyterLabTelemetryLibrary.notebookClipboardEvent.notebookClipboardCopied.connect(
 	      telemetryHandler 

@@ -10,7 +10,7 @@ export class AWSAPIGatewayWrapper {
         { url, bucket, path, retry = 1000, errorHandler = console.error }:
             {
                 url: string,
-		bucket: string,
+                bucket: string,
                 path: string,
                 retry?: number | null,
                 errorHandler?: (e: any) => void | null
@@ -20,7 +20,7 @@ export class AWSAPIGatewayWrapper {
         this.requestAsync = this.requestAsync.bind(this);
 
         this._url = url;
-	this._bucket = bucket;
+        this._bucket = bucket;
         this._path = path;
         this._retry = retry;
         this._errorHandler = errorHandler;
@@ -41,9 +41,7 @@ export class AWSAPIGatewayWrapper {
     }
 
     async requestAsync(data: any): Promise<Response> {
-
         let response: Response;
-
         try {
 
             response = await fetch([this._url, this._bucket, this._path].join("/"), {
@@ -59,7 +57,6 @@ export class AWSAPIGatewayWrapper {
             });
 
             if (response.status !== 200) {
-
                 throw new Error(JSON.stringify({
                     "response.status": response.status,
                     "response.statusText": response.statusText,
@@ -70,7 +67,6 @@ export class AWSAPIGatewayWrapper {
             return response;
         }
         catch (e) {
-
             if (typeof this._errorHandler == "function") {
                 this._errorHandler(e);
             }
