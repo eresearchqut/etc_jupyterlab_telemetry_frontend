@@ -71,11 +71,7 @@ function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNoteb
       }
     }
     catch (e) {
-      const errorMessage = e.message;
-      const regex = /The cell at index [\D+] is not tracked/g;
-      if (errorMessage.match(regex)) {
-        console.error(e);
-      }
+      console.error('ERROR:', e);
     }
   };
 
