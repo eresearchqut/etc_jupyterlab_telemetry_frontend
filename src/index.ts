@@ -71,7 +71,7 @@ function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNoteb
       }
     }
     catch (e) {
-      console.error('ERROR:', e);
+      console.error(e);
     }
   };
 
