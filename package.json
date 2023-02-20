@@ -59,7 +59,7 @@
     "@educational-technology-collective/etc_jupyterlab_notebook_state_provider": "^2.0.0"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.1.0",
+    "@jupyterlab/builder": "^3.6.1",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "eslint": "^7.14.0",
@@ -83,7 +83,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "jupyterlab": { 
+  "jupyterlab": {
     "sharedPackages": {
       "@educational-technology-collective/etc_jupyterlab_telemetry_library": {
         "bundled": false,
