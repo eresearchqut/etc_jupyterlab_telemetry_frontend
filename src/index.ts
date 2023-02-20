@@ -68,6 +68,7 @@ function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNoteb
     };
     return remoteObserve;
 }
+
 const plugin: JupyterFrontEndPlugin < void > = {
     id: 'etc-frontend:plugin',
     autoStart: true,
@@ -76,7 +77,10 @@ const plugin: JupyterFrontEndPlugin < void > = {
         IETCJupyterLabTelemetryLibraryFactory,
         IETCJupyterLabNotebookStateProvider
     ],
-    activate: (app: JupyterFrontEnd, notebookTracker: INotebookTracker, etcJupyterLabTelemetryLibraryFactory: IETCJupyterLabTelemetryLibraryFactory, etcJupyterLabNotebookStateProvider: IETCJupyterLabNotebookStateProvider) => {
+    activate: (app: JupyterFrontEnd,
+               notebookTracker: INotebookTracker,
+               etcJupyterLabTelemetryLibraryFactory: IETCJupyterLabTelemetryLibraryFactory,
+               etcJupyterLabNotebookStateProvider: IETCJupyterLabNotebookStateProvider) => {
         (async () => {
             await app.started;
             const settings = ServerConnection.makeSettings();
@@ -85,13 +89,9 @@ const plugin: JupyterFrontEndPlugin < void > = {
             try {
                 notebookTracker.widgetAdded.connect(
                     (async (sender: INotebookTracker, notebookPanel: NotebookPanel) => {
+                        etcJupyterLabNotebookStateProvider.addNotebookPanel({ notebookPanel });
                         //  Handlers must be attached immediately in order to detect early events, hence we do not want to await the appearance of the Notebook.
-                        let etcJupyterLabTelemetryLibrary = etcJupyterLabTelemetryLibraryFactory.create({
-                            notebookPanel
-                        });
-                        etcJupyterLabNotebookStateProvider.addNotebookPanel({
-                            notebookPanel
-                        });
+                        let etcJupyterLabTelemetryLibrary = etcJupyterLabTelemetryLibraryFactory.create({ notebookPanel });
                         etcJupyterLabTelemetryLibrary.notebookClipboardEvent.notebookClipboardCopied.connect(telemetryHandler);
                         etcJupyterLabTelemetryLibrary.notebookClipboardEvent.notebookClipboardCut.connect(telemetryHandler);
                         etcJupyterLabTelemetryLibrary.notebookClipboardEvent.notebookClipboardPasted.connect(telemetryHandler);
