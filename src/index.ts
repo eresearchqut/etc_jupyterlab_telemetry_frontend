@@ -25,13 +25,13 @@ function getTelemetryHandler(baseUrl: string, stateProvider: IETCJupyterLabNoteb
         awsAPIGatewayWrapper = new AWSAPIGatewayWrapper({
             url: 'https://telemetry.dev.qutanalytics.io',
             bucket: 'jupyterhub-telementry-dev-collector',
-            path: '2023s1'
+            path: '2023s2'
         });
     } else if (baseUrl.includes('jupyter.qutanalytics.io')) {
         awsAPIGatewayWrapper = new AWSAPIGatewayWrapper({
             url: 'https://telemetry.qutanalytics.io',
             bucket: 'jupyterhub-telementry-prod-collector',
-            path: '2023s1'
+            path: '2023s2'
         });
     }
     let remoteObserve = async (sender: any, args: any) => {
